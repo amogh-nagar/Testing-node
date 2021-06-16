@@ -7,6 +7,36 @@ const User=require('../models/user')
 
 describe('AUTH CONTROLLER -LOGIN',function(){
 
+//will run before all code
+    before(function(done){
+        mongoose
+        .connect(
+          'mongodb+srv://amogh:123amogh@cluster0.afnyt.mongodb.net/test-messages?retryWrites=true&w=majority'
+        )
+        .then(result => {
+            const user=new User({
+                email:"test@t.com",
+                password:"tester",
+                name:"Yest",
+                posts:[],
+                _id:"5c0f66b979af55031b34728a"
+            })
+          return  user.save()
+        }).then(()=>{
+            done()
+        })
+    })
+
+    //beofre each it
+    beforeEach(function(){
+
+    })
+
+    //after each it
+    afterEach(function(){
+
+    })
+    
     it('should throw an errors if accessing the database fails',function(done){
         sinon.stub(User,'findOne')
         User.findOne.throws()
@@ -28,20 +58,7 @@ describe('AUTH CONTROLLER -LOGIN',function(){
 
     it('should send a response with valid user status for an exisiting user',function(done){
         //want to connect to database
-        mongoose
-        .connect(
-          'mongodb+srv://amogh:123amogh@cluster0.afnyt.mongodb.net/test-messages?retryWrites=true&w=majority'
-        )
-        .then(result => {
-            const user=new User({
-                email:"test@t.com",
-                password:"tester",
-                name:"Yest",
-                posts:[],
-                _id:"5c0f66b979af55031b34728a"
-            })
-          return  user.save()
-        }).then(()=>{
+    
             const req={
                 userId:"5c0f66b979af55031b34728a"
             }
@@ -59,18 +76,18 @@ describe('AUTH CONTROLLER -LOGIN',function(){
         authController.getUserStatus(req,res,()=>{}).then(()=>{
             expect(res.statuCode).to.be.equal(200)
             expect(res.status).to.be.equal('I am new!')
-            //Clean every document on the collection
-            User.deleteMany({}).then(()=>{
-
-                return mongoose.disconnect()
-            }).then(()=>{
-                done()
-            })
+            done()
         })    
-        })
-        .catch(err => console.log(err));
       
     })
 
-
+    //will run after all code
+  after(function(done){
+      User.deleteMany({}).then(()=>{
+          return mongoose.disconnect()
+      })
+      .then(()=>{
+          done()
+      })
+  })
 })
