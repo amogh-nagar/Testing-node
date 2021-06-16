@@ -1,7 +1,7 @@
 const authMiddleware=require('../middleware/is-auth')
 const expect=require('chai').expect
-
-
+const jwt=require('jsonwebtoken')
+const sinon=require('sinon')
 
 describe('Auth middleware',function(){
 
@@ -26,6 +26,27 @@ it('should throw an error if the authorization header is only one string',functi
 })
 
 
+it('should yeild a userId after decoding the token',function(){
+    const req={
+        get:function(headername){
+          return 'Bearer erirghsrtgkj'
+        }
+    }
+   //Globally replaced
+    // jwt.verify=function(){
+    //     return {userId:'amogh'}
+    // }
+
+    sinon.stub(jwt,'verify');//created a copy of jwt.verify
+    jwt.verify.returns({userId:'abc'})
+    authMiddleware(req,{},()=>{})
+    expect(req).to.have.property('userId')
+    expect(req).to.have.property('userId','abc')
+
+    jwt.verify.restore()//restored the original function
+})
+
+
 it('should throw an error if token cannot be verified',function(){
     const req={
         get:function(headername){
@@ -36,15 +57,7 @@ it('should throw an error if token cannot be verified',function(){
 })
 
 
-it('should yeild a userId after decoding the token',function(){
-    const req={
-        get:function(headername){
-          return 'Bearer erirghsrtgkj'
-        }
-    }
-    authMiddleware(req,{},()=>{})
-    expect(req).to.have.property('userId')
-})
+
 })
 
 
